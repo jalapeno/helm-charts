@@ -50,7 +50,7 @@ spec:
       labels:
         app: kafka
     spec:
-      serviceAccountName: {{ .Release.Name }}-jalapeno
+      serviceAccountName: {{ include "jalapeno.parentFullname" . }}
       terminationGracePeriodSeconds: 30
       initContainers:
       - name: init-config

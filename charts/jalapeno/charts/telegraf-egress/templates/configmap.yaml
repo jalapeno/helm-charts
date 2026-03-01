@@ -21,7 +21,7 @@ data:
       hostname = "telegraf"
 
     [[inputs.kafka_consumer]]
-      brokers = [{{ printf "%s.svc" .Values.global.kafka.server | quote }}]
+      brokers = [{{ .Values.global.kafka.server | quote }}]
       topics = ["jalapeno.telemetry"]
       max_message_len = 1000000
       data_format = "influx"

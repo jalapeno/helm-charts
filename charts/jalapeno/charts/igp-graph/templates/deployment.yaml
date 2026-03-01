@@ -55,5 +55,5 @@ spec:
       volumes:
       - name: credentials
         secret:
-          secretName: {{ .Release.Name }}-jalapeno
+          secretName: {{ include "jalapeno.parentFullname" . }}
 {{- end }}

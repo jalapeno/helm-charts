@@ -71,10 +71,24 @@ ArangoDB database name.
 {{- end }}
 
 {{/*
+Compute the parent chart's fullname from any context (parent or subchart).
+Subcharts have a different .Chart.Name, so they can't use jalapeno.fullname
+to reference parent-created resources. This helper hardcodes the parent chart
+name "jalapeno" to produce a consistent result everywhere.
+*/}}
+{{- define "jalapeno.parentFullname" -}}
+{{- if contains "jalapeno" .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-jalapeno" .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end }}
+
+{{/*
 Name of the shared credentials secret.
 */}}
 {{- define "jalapeno.credentialsSecret" -}}
-{{- include "jalapeno.fullname" . }}
+{{- include "jalapeno.parentFullname" . }}
 {{- end }}
 
 {{/*

@@ -28,6 +28,6 @@ data:
         ifstats = "ietf-interfaces:interfaces-state/interface/statistics"
 
     [[outputs.kafka]]
-      brokers = [{{ printf "%s.svc" .Values.global.kafka.server | quote }}]
+      brokers = [{{ .Values.global.kafka.server | quote }}]
       topic = "jalapeno.telemetry"
 {{- end }}
