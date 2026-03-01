@@ -1,0 +1,27 @@
+{{- if and .Values.enabled .Values.hostPath.enabled }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: arangodb
+spec:
+  capacity:
+    storage: {{ .Values.persistence.data.size }}
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: {{ .Values.hostPath.dataPath }}
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: arangodb-apps
+spec:
+  capacity:
+    storage: {{ .Values.persistence.appdata.size }}
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: {{ .Values.hostPath.appdataPath }}
+  persistentVolumeReclaimPolicy: Retain
+{{- end }}

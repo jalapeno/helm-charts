@@ -1,0 +1,51 @@
+# values-kind.yaml
+# Overrides for deploying Jalapeno on a Kind (Kubernetes in Docker) cluster.
+#
+# Usage:
+#   helm install jalapeno charts/jalapeno \
+#     -f charts/jalapeno/values-kind.yaml \
+#     --namespace jalapeno --create-namespace
+
+# Kind uses hostPath by default for PVs; reduce storage sizes for local dev
+arangodb:
+  persistence:
+    data:
+      size: 10Gi
+      storageClass: "standard"
+    appdata:
+      size: 5Gi
+      storageClass: "standard"
+  hostPath:
+    enabled: false
+  service:
+    type: NodePort
+
+kafka:
+  zookeeper:
+    persistence:
+      size: 2Gi
+      storageClass: "standard"
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "0.25"
+  broker:
+    persistence:
+      size: 10Gi
+      storageClass: "standard"
+    service:
+      type: NodePort
+
+# NodePort services work with kind port mappings
+gobmp:
+  service:
+    type: NodePort
+
+api:
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"

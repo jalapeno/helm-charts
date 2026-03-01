@@ -1,0 +1,13 @@
+enabled: true
+
+image:
+  repository: iejalapeno/ip-graph
+  tag: latest
+
+replicas: 1
+verbosity: "5"
+
+initContainer:
+  image: curlimages/curl:8.5.0
+  initialDelay: 15
+  checkInterval: 5

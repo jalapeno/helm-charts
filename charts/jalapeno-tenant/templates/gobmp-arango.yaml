@@ -1,0 +1,43 @@
+{{- if .Values.gobmpArango.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gobmp-arango
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+    app: gobmp-arango
+spec:
+  replicas: {{ .Values.gobmpArango.replicas }}
+  selector:
+    matchLabels:
+      app: gobmp-arango
+  template:
+    metadata:
+      labels:
+        {{- include "tenant.labels" . | nindent 8 }}
+        app: gobmp-arango
+    spec:
+      containers:
+      - name: gobmp-arango
+        image: "{{ .Values.gobmpArango.image.repository }}:{{ .Values.gobmpArango.image.tag }}"
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+        args:
+        - --v
+        - {{ .Values.gobmpArango.verbosity | quote }}
+        - --message-server
+        - {{ .Values.global.kafka.server | quote }}
+        - --database-server
+        - {{ .Values.global.arangodb.server | quote }}
+        - --database-name
+        - {{ include "tenant.databaseName" . | quote }}
+        - --notify-event
+        - {{ .Values.gobmpArango.notifyEvent | quote }}
+        volumeMounts:
+        - name: credentials
+          mountPath: /credentials
+      volumes:
+      - name: credentials
+        secret:
+          secretName: {{ include "tenant.credentialsSecret" . }}
+{{- end }}

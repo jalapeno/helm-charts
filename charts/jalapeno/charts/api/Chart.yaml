@@ -1,0 +1,5 @@
+apiVersion: v2
+name: api
+description: Jalapeno REST API for querying ArangoDB data and running graph traversals
+type: application
+version: 0.1.0

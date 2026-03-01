@@ -1,0 +1,22 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: grafana
+data:
+  grafana.ini: |-
+    [paths]
+    data = /var/lib/grafana
+    logs = /var/log/grafana
+    plugins = /var/lib/grafana/plugins
+
+    [log]
+    mode = console
+
+    [security]
+    admin_user = {{ .Values.adminUser }}
+    admin_password = {{ .Values.adminPassword }}
+{{- end }}

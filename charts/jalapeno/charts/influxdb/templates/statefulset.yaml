@@ -1,0 +1,58 @@
+{{- if .Values.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: influxdb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: influxdb
+spec:
+  selector:
+    matchLabels:
+      app: influxdb
+  serviceName: "influxdb"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: influxdb
+        storage: persistent
+    spec:
+      terminationGracePeriodSeconds: 5
+      containers:
+      - name: influxdb
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        ports:
+        - containerPort: 8086
+          protocol: TCP
+        env:
+        - name: INFLUXDB_DB
+          value: {{ .Values.database | quote }}
+        - name: INFLUXDB_ADMIN_ENABLED
+          value: "true"
+        - name: INFLUXDB_ADMIN_USER
+          value: {{ .Values.adminUser | quote }}
+        - name: INFLUXDB_ADMIN_PASSWORD
+          value: {{ .Values.adminPassword | quote }}
+        - name: INFLUXDB_USER
+          value: {{ .Values.user | quote }}
+        - name: INFLUXDB_USER_PASSWORD
+          value: {{ .Values.userPassword | quote }}
+        command: ["/bin/sh"]
+        args: ["-c", "/init-influxdb.sh && /entrypoint.sh influxd"]
+        resources: {}
+        volumeMounts:
+        - mountPath: /data
+          name: influxdb-storage
+        - mountPath: /var/log/influxdb
+          name: influxdb-log
+        - mountPath: /var/lib/influxdb
+          name: influxdb-lib
+      volumes:
+      - name: influxdb-storage
+        emptyDir: {}
+      - name: influxdb-log
+        emptyDir: {}
+      - name: influxdb-lib
+        emptyDir: {}
+{{- end }}

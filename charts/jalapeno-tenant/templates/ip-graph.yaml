@@ -1,0 +1,127 @@
+{{- if .Values.ipGraph.enabled }}
+{{- $arangoServer := .Values.global.arangodb.server }}
+{{- $arangoDb := include "tenant.databaseName" . }}
+{{- $arangoPassword := .Values.global.credentials.arangoPassword }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ip-graph
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+    app: ip-graph
+spec:
+  replicas: {{ .Values.ipGraph.replicas }}
+  selector:
+    matchLabels:
+      app: ip-graph
+  template:
+    metadata:
+      labels:
+        {{- include "tenant.labels" . | nindent 8 }}
+        app: ip-graph
+    spec:
+      initContainers:
+      - name: wait-for-data
+        image: {{ .Values.ipGraph.initContainer.image }}
+        command:
+        - sh
+        - -c
+        - |
+          bgp_node_count=$(curl -s -u root:{{ $arangoPassword }} "{{ $arangoServer }}/_db/{{ $arangoDb }}/_api/collection/bgp_node/count" 2>/dev/null | grep -o '"count":[0-9]*' | cut -d':' -f2)
+          bgp_node_count=${bgp_node_count:-0}
+
+          if [ $bgp_node_count -gt 0 ]; then
+            echo "Detected pod restart (bgp_node has $bgp_node_count nodes)"
+            sleep 5
+            echo "Starting IP graph processor"
+            exit 0
+          fi
+
+          echo "Detected fresh install - performing full stabilization checks..."
+          sleep {{ .Values.ipGraph.initContainer.initialDelay }}
+
+          echo "Waiting for igp_node collection to stabilize..."
+          prev_igp=0
+          stable_count=0
+          while true; do
+            curr_igp=$(curl -s -u root:{{ $arangoPassword }} "{{ $arangoServer }}/_db/{{ $arangoDb }}/_api/collection/igp_node/count" | grep -o '"count":[0-9]*' | cut -d':' -f2)
+            curr_igp=${curr_igp:-0}
+            if [ $curr_igp -eq 0 ]; then
+              echo "igp_node collection still empty, waiting...";
+              sleep {{ .Values.ipGraph.initContainer.checkInterval }};
+              continue;
+            fi
+            diff=$((curr_igp - prev_igp))
+            echo "igp_node: $curr_igp nodes (delta: +$diff)"
+            if [ $diff -eq 0 ] && [ $prev_igp -gt 0 ]; then
+              stable_count=$((stable_count + 1))
+              if [ $stable_count -ge 2 ]; then
+                echo "igp_node stabilized at $curr_igp nodes"
+                break;
+              fi
+            else
+              stable_count=0
+            fi
+            prev_igp=$curr_igp
+            sleep {{ .Values.ipGraph.initContainer.checkInterval }};
+          done
+
+          echo "Checking for BGP peer data..."
+          until [ $(curl -s -u root:{{ $arangoPassword }} "{{ $arangoServer }}/_db/{{ $arangoDb }}/_api/collection/peer/count" | grep -o '"count":[0-9]*' | cut -d':' -f2) -gt 0 ] 2>/dev/null; do
+            echo "peer collection empty, waiting...";
+            sleep {{ .Values.ipGraph.initContainer.checkInterval }};
+          done
+
+          echo "Waiting for unicast_prefix_v4 to stabilize..."
+          prev_v4=0; stable_v4=0
+          while true; do
+            curr_v4=$(curl -s -u root:{{ $arangoPassword }} "{{ $arangoServer }}/_db/{{ $arangoDb }}/_api/collection/unicast_prefix_v4/count" | grep -o '"count":[0-9]*' | cut -d':' -f2)
+            curr_v4=${curr_v4:-0}
+            if [ $curr_v4 -eq 0 ]; then sleep {{ .Values.ipGraph.initContainer.checkInterval }}; continue; fi
+            diff=$((curr_v4 - prev_v4))
+            if [ $diff -lt 100 ] && [ $prev_v4 -gt 0 ]; then
+              stable_v4=$((stable_v4 + 1))
+              if [ $stable_v4 -ge 2 ]; then break; fi
+            else stable_v4=0; fi
+            prev_v4=$curr_v4
+            sleep {{ .Values.ipGraph.initContainer.checkInterval }};
+          done
+
+          echo "Waiting for unicast_prefix_v6 to stabilize..."
+          prev_v6=0; stable_v6=0
+          while true; do
+            curr_v6=$(curl -s -u root:{{ $arangoPassword }} "{{ $arangoServer }}/_db/{{ $arangoDb }}/_api/collection/unicast_prefix_v6/count" | grep -o '"count":[0-9]*' | cut -d':' -f2)
+            curr_v6=${curr_v6:-0}
+            if [ $curr_v6 -eq 0 ]; then sleep {{ .Values.ipGraph.initContainer.checkInterval }}; continue; fi
+            diff=$((curr_v6 - prev_v6))
+            if [ $diff -lt 100 ] && [ $prev_v6 -gt 0 ]; then
+              stable_v6=$((stable_v6 + 1))
+              if [ $stable_v6 -ge 2 ]; then break; fi
+            else stable_v6=0; fi
+            prev_v6=$curr_v6
+            sleep {{ .Values.ipGraph.initContainer.checkInterval }};
+          done
+
+          echo "All data stabilized - starting IP graph processor"
+      containers:
+      - name: ip-graph
+        image: "{{ .Values.ipGraph.image.repository }}:{{ .Values.ipGraph.image.tag }}"
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+        args:
+        - --v
+        - {{ .Values.ipGraph.verbosity | quote }}
+        - --message-server
+        - {{ .Values.global.kafka.server | quote }}
+        - --database-server
+        - {{ $arangoServer | quote }}
+        - --database-name
+        - {{ $arangoDb | quote }}
+        volumeMounts:
+        - name: credentials
+          mountPath: /credentials
+      volumes:
+      - name: credentials
+        secret:
+          secretName: {{ include "tenant.credentialsSecret" . }}
+{{- end }}

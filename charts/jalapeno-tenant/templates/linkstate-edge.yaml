@@ -1,0 +1,41 @@
+{{- if .Values.linkstateEdge.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linkstate-edge
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+    app: linkstate-edge
+spec:
+  replicas: {{ .Values.linkstateEdge.replicas }}
+  selector:
+    matchLabels:
+      app: linkstate-edge
+  template:
+    metadata:
+      labels:
+        {{- include "tenant.labels" . | nindent 8 }}
+        app: linkstate-edge
+    spec:
+      containers:
+      - name: linkstate-edge
+        image: "{{ .Values.linkstateEdge.image.repository }}:{{ .Values.linkstateEdge.image.tag }}"
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+        args:
+        - --v
+        - {{ .Values.linkstateEdge.verbosity | quote }}
+        - --message-server
+        - {{ .Values.global.kafka.server | quote }}
+        - --database-server
+        - {{ .Values.global.arangodb.server | quote }}
+        - --database-name
+        - {{ include "tenant.databaseName" . | quote }}
+        volumeMounts:
+        - name: credentials
+          mountPath: /credentials
+      volumes:
+      - name: credentials
+        secret:
+          secretName: {{ include "tenant.credentialsSecret" . }}
+{{- end }}

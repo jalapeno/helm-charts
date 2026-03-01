@@ -1,0 +1,45 @@
+dependencies:
+- name: arangodb
+  repository: file://charts/arangodb
+  version: 0.1.0
+- name: kafka
+  repository: file://charts/kafka
+  version: 0.1.0
+- name: gobmp
+  repository: file://charts/gobmp
+  version: 0.1.0
+- name: telegraf-ingress
+  repository: file://charts/telegraf-ingress
+  version: 0.1.0
+- name: gobmp-arango
+  repository: file://charts/gobmp-arango
+  version: 0.1.0
+- name: linkstate-edge
+  repository: file://charts/linkstate-edge
+  version: 0.1.0
+- name: igp-graph
+  repository: file://charts/igp-graph
+  version: 0.1.0
+- name: ip-graph
+  repository: file://charts/ip-graph
+  version: 0.1.0
+- name: srv6-localsids
+  repository: file://charts/srv6-localsids
+  version: 0.1.0
+- name: api
+  repository: file://charts/api
+  version: 0.1.0
+- name: ui
+  repository: file://charts/ui
+  version: 0.1.0
+- name: telegraf-egress
+  repository: file://charts/telegraf-egress
+  version: 0.1.0
+- name: influxdb
+  repository: file://charts/influxdb
+  version: 0.1.0
+- name: grafana
+  repository: file://charts/grafana
+  version: 0.1.0
+digest: sha256:81f2c31290c5736beac72e75114036edd5f43a2206df3faea18d906f7d9e10db
+generated: "2026-03-01T12:21:34.299927-08:00"

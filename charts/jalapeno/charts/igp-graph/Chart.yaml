@@ -1,0 +1,5 @@
+apiVersion: v2
+name: igp-graph
+description: IGP graph processor - builds IGP topology graph from link-state data
+type: application
+version: 0.1.0

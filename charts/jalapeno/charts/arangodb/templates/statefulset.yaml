@@ -1,0 +1,62 @@
+{{- if .Values.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: arangodb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: arangodb
+spec:
+  selector:
+    matchLabels:
+      app: arangodb
+  serviceName: "arangodb"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: arangodb
+        storage: persistent
+    spec:
+      terminationGracePeriodSeconds: 5
+      containers:
+      - name: arangodb
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.global.imagePullPolicy | default "Always" }}
+        env:
+        - name: ARANGO_ROOT_PASSWORD
+          value: {{ .Values.rootPassword | quote }}
+        ports:
+        - containerPort: 8529
+          protocol: TCP
+        {{- with .Values.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/arangodb3
+        - name: appdata
+          mountPath: /var/lib/arangodb3-apps
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      {{- if .Values.persistence.data.storageClass }}
+      storageClassName: {{ .Values.persistence.data.storageClass | quote }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.persistence.data.size }}
+  - metadata:
+      name: appdata
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      {{- if .Values.persistence.appdata.storageClass }}
+      storageClassName: {{ .Values.persistence.appdata.storageClass | quote }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.persistence.appdata.size }}
+{{- end }}

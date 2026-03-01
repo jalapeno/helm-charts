@@ -1,0 +1,29 @@
+{{- if and .Values.enabled .Values.zookeeper.hostPath.enabled }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pvzoo
+spec:
+  capacity:
+    storage: {{ .Values.zookeeper.persistence.size }}
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: {{ .Values.zookeeper.hostPath.path | quote }}
+  persistentVolumeReclaimPolicy: Retain
+{{- end }}
+{{- if and .Values.enabled .Values.broker.hostPath.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pvkafka
+spec:
+  capacity:
+    storage: {{ .Values.broker.persistence.size }}
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: {{ .Values.broker.hostPath.path | quote }}
+  persistentVolumeReclaimPolicy: Retain
+{{- end }}

@@ -1,0 +1,7 @@
+enabled: false
+
+image:
+  repository: iejalapeno/srv6-localsids
+  tag: latest
+
+replicas: 1

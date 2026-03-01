@@ -1,0 +1,21 @@
+enabled: true
+
+image:
+  repository: iejalapeno/jalapeno-api
+  tag: latest
+
+replicas: 1
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 8000
+  nodePort: 30800
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "200m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"

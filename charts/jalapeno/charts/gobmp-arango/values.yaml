@@ -1,0 +1,9 @@
+enabled: true
+
+image:
+  repository: iejalapeno/gobmp-arango
+  tag: latest
+
+replicas: 1
+verbosity: "5"
+notifyEvent: "true"

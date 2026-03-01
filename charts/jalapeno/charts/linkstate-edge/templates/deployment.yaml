@@ -1,0 +1,39 @@
+{{- if .Values.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linkstate-edge
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: linkstate-edge
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: linkstate-edge
+  template:
+    metadata:
+      labels:
+        app: linkstate-edge
+    spec:
+      containers:
+      - name: linkstate-edge
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.global.imagePullPolicy | default "Always" }}
+        args:
+        - --v
+        - {{ .Values.verbosity | quote }}
+        - --message-server
+        - {{ .Values.global.kafka.server | quote }}
+        - --database-server
+        - {{ .Values.global.arangodb.server | quote }}
+        - --database-name
+        - {{ .Values.global.arangodb.databaseName | quote }}
+        volumeMounts:
+        - name: credentials
+          mountPath: /credentials
+      volumes:
+      - name: credentials
+        secret:
+          secretName: {{ .Release.Name }}-jalapeno
+{{- end }}

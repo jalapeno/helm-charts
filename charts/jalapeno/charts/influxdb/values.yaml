@@ -1,0 +1,15 @@
+enabled: true
+
+image:
+  repository: influxdb
+  tag: "1.7-alpine"
+
+database: "mdt_db"
+adminUser: "admin"
+adminPassword: "gsplab"
+user: "root"
+userPassword: "jalapeno"
+
+service:
+  type: NodePort
+  nodePort: 30308

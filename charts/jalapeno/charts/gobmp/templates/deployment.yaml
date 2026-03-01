@@ -1,0 +1,42 @@
+{{- if .Values.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gobmp
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: gobmp
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: gobmp
+  template:
+    metadata:
+      labels:
+        app: gobmp
+    spec:
+      containers:
+      - name: gobmp
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.global.imagePullPolicy | default "Always" }}
+        args:
+        - --v
+        - {{ .Values.verbosity | quote }}
+        - --kafka-server
+        - {{ .Values.global.kafka.server | quote }}
+        ports:
+        - containerPort: {{ .Values.service.bmpPort }}
+          protocol: TCP
+          name: bmp
+        - containerPort: {{ .Values.service.perfPort }}
+          protocol: TCP
+          name: perf
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/gobmp
+      volumes:
+      - name: config-volume
+        configMap:
+          name: gobmp-config
+{{- end }}

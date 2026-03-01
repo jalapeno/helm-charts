@@ -1,0 +1,5 @@
+apiVersion: v2
+name: srv6-localsids
+description: SRv6 Local SIDs processor for SRv6 topology data
+type: application
+version: 0.1.0

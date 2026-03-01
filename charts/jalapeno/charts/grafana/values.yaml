@@ -1,0 +1,13 @@
+enabled: true
+
+image:
+  repository: grafana/grafana
+  tag: "9.5.15"
+
+replicas: 1
+adminUser: root
+adminPassword: jalapeno
+
+service:
+  type: NodePort
+  nodePort: 30300

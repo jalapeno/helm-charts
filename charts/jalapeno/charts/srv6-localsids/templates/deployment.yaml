@@ -1,0 +1,28 @@
+{{- if .Values.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: srv6-localsids
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: srv6-localsids
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: srv6-localsids
+  template:
+    metadata:
+      labels:
+        app: srv6-localsids
+    spec:
+      containers:
+      - name: srv6-localsids
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+      imagePullSecrets:
+      - name: regcred
+{{- end }}

@@ -1,0 +1,33 @@
+{{- if .Values.enabled }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: telegraf-ingress-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: telegraf-ingress
+data:
+  telegraf.conf: |
+    [agent]
+      interval = {{ .Values.config.interval | quote }}
+      round_interval = true
+      metric_buffer_limit = 10000
+      flush_buffer_when_full = true
+      collection_jitter = "0s"
+      flush_interval = {{ .Values.config.flushInterval | quote }}
+      flush_jitter = "0s"
+      debug = false
+      quiet = false
+      hostname = "telegraf"
+
+    [[inputs.cisco_telemetry_mdt]]
+      transport = "grpc"
+      service_address = ":{{ .Values.service.port }}"
+      embedded_tags = ["Cisco-IOS-XR-fib-common-oper:mpls-forwarding/nodes/node/label-fib/forwarding-details/forwarding-detail/label-information/outgoing-interface"]
+      [inputs.cisco_telemetry_mdt.aliases]
+        ifstats = "ietf-interfaces:interfaces-state/interface/statistics"
+
+    [[outputs.kafka]]
+      brokers = [{{ printf "%s.svc" .Values.global.kafka.server | quote }}]
+      topic = "jalapeno.telemetry"
+{{- end }}

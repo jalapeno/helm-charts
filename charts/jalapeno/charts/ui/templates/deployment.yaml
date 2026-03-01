@@ -1,0 +1,40 @@
+{{- if .Values.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jalapeno-ui
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: jalapeno-ui
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: jalapeno-ui
+  template:
+    metadata:
+      labels:
+        app: jalapeno-ui
+    spec:
+      containers:
+      - name: jalapeno-ui
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.global.imagePullPolicy | default "Always" }}
+        ports:
+        - containerPort: {{ .Values.service.targetPort }}
+        env:
+        - name: REACT_APP_API_URL
+          value: "http://jalapeno-api:{{ .Values.service.port }}"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.service.targetPort }}
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.service.targetPort }}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+{{- end }}

@@ -1,0 +1,98 @@
+# Tenant configuration.
+# The tenant name is used for:
+#   - Kubernetes namespace (if --create-namespace is used)
+#   - ArangoDB database name
+# If not set, defaults to the Helm release name.
+tenant:
+  name: ""
+
+global:
+  imagePullPolicy: Always
+
+  # Shared infrastructure endpoints (must point to the base Jalapeno namespace)
+  kafka:
+    server: "broker.jalapeno:9092"
+
+  arangodb:
+    server: "http://arangodb.jalapeno:8529"
+    # Per-tenant database name; defaults to tenant name if empty
+    databaseName: ""
+
+  credentials:
+    arangoUsername: "root"
+    arangoPassword: "jalapeno"
+
+# ---------------------------------------------------------------------------
+# Collectors (per-tenant instances)
+# ---------------------------------------------------------------------------
+
+gobmp:
+  enabled: true
+  image:
+    repository: sbezverk/gobmp
+    tag: latest
+  replicas: 1
+  verbosity: "5"
+  service:
+    type: NodePort
+    bmpPort: 5000
+    bmpNodePort: 30511
+    perfPort: 56767
+    perfNodePort: 30767
+
+# ---------------------------------------------------------------------------
+# Base Processors
+# ---------------------------------------------------------------------------
+
+gobmpArango:
+  enabled: true
+  image:
+    repository: iejalapeno/gobmp-arango
+    tag: latest
+  replicas: 1
+  verbosity: "5"
+  notifyEvent: "true"
+
+linkstateEdge:
+  enabled: true
+  image:
+    repository: iejalapeno/linkstate-edge
+    tag: latest
+  replicas: 1
+  verbosity: "5"
+
+# ---------------------------------------------------------------------------
+# Graph Processors (per-tenant instances)
+# ---------------------------------------------------------------------------
+
+igpGraph:
+  enabled: true
+  image:
+    repository: iejalapeno/igp-graph
+    tag: latest
+  replicas: 1
+  verbosity: "5"
+  initContainer:
+    image: curlimages/curl:8.5.0
+    initialDelay: 15
+    checkInterval: 5
+    stabilizationDelay: 10
+
+ipGraph:
+  enabled: true
+  image:
+    repository: iejalapeno/ip-graph
+    tag: latest
+  replicas: 1
+  verbosity: "5"
+  initContainer:
+    image: curlimages/curl:8.5.0
+    initialDelay: 15
+    checkInterval: 5
+
+srv6Localsids:
+  enabled: false
+  image:
+    repository: iejalapeno/srv6-localsids
+    tag: latest
+  replicas: 1

@@ -1,0 +1,15 @@
+enabled: true
+
+image:
+  repository: telegraf
+  tag: "1.30.0-alpine"
+
+replicas: 1
+
+config:
+  interval: "10s"
+  flushInterval: "10s"
+  influxdbUrl: "http://influxdb:8086"
+  influxdbDatabase: "mdt_db"
+  influxdbUsername: "jalapeno"
+  influxdbPassword: "jalapeno"

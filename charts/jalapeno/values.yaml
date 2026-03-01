@@ -1,0 +1,245 @@
+global:
+  imagePullPolicy: Always
+
+  kafka:
+    server: "broker:9092"
+
+  arangodb:
+    server: "http://arangodb:8529"
+    databaseName: "jalapeno"
+
+  credentials:
+    arangoUsername: "root"
+    arangoPassword: "jalapeno"
+
+# ---------------------------------------------------------------------------
+# Infrastructure
+# ---------------------------------------------------------------------------
+
+arangodb:
+  enabled: true
+  image:
+    repository: arangodb
+    tag: "3.10.12"
+  rootPassword: "jalapeno"
+  persistence:
+    data:
+      size: 80Gi
+      storageClass: ""
+    appdata:
+      size: 20Gi
+      storageClass: ""
+  hostPath:
+    enabled: false
+    dataPath: /var/lib/arangodb3
+    appdataPath: /var/lib/arangodb3-apps
+  service:
+    type: NodePort
+    nodePort: 30852
+  resources: {}
+
+kafka:
+  enabled: true
+  zookeeper:
+    image:
+      repository: k8s.gcr.io/kubernetes-zookeeper
+      tag: "1.0-3.4.10"
+    replicas: 1
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "0.5"
+    persistence:
+      size: 10Gi
+      storageClass: ""
+    hostPath:
+      enabled: false
+      path: /var/lib/zookeeper
+  broker:
+    image:
+      repository: solsson/kafka
+      tag: latest
+    initImage: "solsson/kafka-initutils@sha256:c8582b9df3b3ca9d804e2d914994411fb9b2d94353c4d5476f0a63cf75e59eb0"
+    replicas: 1
+    persistence:
+      size: 50Gi
+      storageClass: ""
+    hostPath:
+      enabled: false
+      path: /var/lib/kafka/data
+    service:
+      type: NodePort
+      nodePort: 30092
+    config:
+      numPartitions: 1
+      autoCreateTopics: true
+      deleteTopicEnable: true
+      logRetentionHours: 1
+
+# ---------------------------------------------------------------------------
+# Collectors
+# ---------------------------------------------------------------------------
+
+gobmp:
+  enabled: true
+  image:
+    repository: sbezverk/gobmp
+    tag: latest
+  replicas: 1
+  verbosity: "5"
+  service:
+    type: NodePort
+    bmpPort: 5000
+    bmpNodePort: 30511
+    perfPort: 56767
+    perfNodePort: 30767
+
+telegraf-ingress:
+  enabled: true
+  image:
+    repository: telegraf
+    tag: "1.30.0-alpine"
+  replicas: 1
+  service:
+    type: NodePort
+    port: 57400
+    nodePort: 32400
+  config:
+    interval: "10s"
+    flushInterval: "10s"
+
+# ---------------------------------------------------------------------------
+# Base Processors
+# ---------------------------------------------------------------------------
+
+gobmp-arango:
+  enabled: true
+  image:
+    repository: iejalapeno/gobmp-arango
+    tag: latest
+  replicas: 1
+  verbosity: "5"
+  notifyEvent: "true"
+
+linkstate-edge:
+  enabled: true
+  image:
+    repository: iejalapeno/linkstate-edge
+    tag: latest
+  replicas: 1
+  verbosity: "5"
+
+# ---------------------------------------------------------------------------
+# Graph Processors
+# ---------------------------------------------------------------------------
+
+igp-graph:
+  enabled: true
+  image:
+    repository: iejalapeno/igp-graph
+    tag: latest
+  replicas: 1
+  verbosity: "5"
+  initContainer:
+    image: curlimages/curl:8.5.0
+    initialDelay: 15
+    checkInterval: 5
+    stabilizationDelay: 10
+
+ip-graph:
+  enabled: true
+  image:
+    repository: iejalapeno/ip-graph
+    tag: latest
+  replicas: 1
+  verbosity: "5"
+  initContainer:
+    image: curlimages/curl:8.5.0
+    initialDelay: 15
+    checkInterval: 5
+
+srv6-localsids:
+  enabled: false
+  image:
+    repository: iejalapeno/srv6-localsids
+    tag: latest
+  replicas: 1
+
+# ---------------------------------------------------------------------------
+# Services
+# ---------------------------------------------------------------------------
+
+api:
+  enabled: true
+  image:
+    repository: iejalapeno/jalapeno-api
+    tag: latest
+  replicas: 1
+  service:
+    type: NodePort
+    port: 80
+    targetPort: 8000
+    nodePort: 30800
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "200m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+ui:
+  enabled: true
+  image:
+    repository: iejalapeno/jalapeno-ui
+    tag: latest
+  replicas: 1
+  service:
+    type: NodePort
+    port: 80
+    targetPort: 80
+    nodePort: 30700
+
+# ---------------------------------------------------------------------------
+# Telemetry
+# ---------------------------------------------------------------------------
+
+telegraf-egress:
+  enabled: true
+  image:
+    repository: telegraf
+    tag: "1.30.0-alpine"
+  replicas: 1
+  config:
+    interval: "10s"
+    flushInterval: "10s"
+    influxdbUrl: "http://influxdb:8086"
+    influxdbDatabase: "mdt_db"
+    influxdbUsername: "jalapeno"
+    influxdbPassword: "jalapeno"
+
+influxdb:
+  enabled: true
+  image:
+    repository: influxdb
+    tag: "1.7-alpine"
+  database: "mdt_db"
+  adminUser: "admin"
+  adminPassword: "gsplab"
+  user: "root"
+  userPassword: "jalapeno"
+  service:
+    type: NodePort
+    nodePort: 30308
+
+grafana:
+  enabled: true
+  image:
+    repository: grafana/grafana
+    tag: "9.5.15"
+  replicas: 1
+  adminUser: root
+  adminPassword: jalapeno
+  service:
+    type: NodePort
+    nodePort: 30300

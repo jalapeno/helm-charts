@@ -1,0 +1,5 @@
+apiVersion: v2
+name: telegraf-egress
+description: Telegraf egress processor - writes telemetry from Kafka to InfluxDB
+type: application
+version: 0.1.0

@@ -1,0 +1,94 @@
+apiVersion: v2
+name: jalapeno
+description: >-
+  Jalapeno SDN platform - an infrastructure platform to facilitate
+  development of SDN control planes. Deploys collectors, data processors,
+  graph processors, databases, and APIs as Kubernetes microservices.
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+maintainers:
+  - name: Jalapeno Team
+    url: https://github.com/jalapeno
+home: https://github.com/jalapeno/jalapeno
+sources:
+  - https://github.com/jalapeno/jalapeno
+  - https://github.com/jalapeno/helm-charts
+keywords:
+  - sdn
+  - networking
+  - topology
+  - graph-database
+  - arangodb
+  - bmp
+  - segment-routing
+  - srv6
+
+dependencies:
+  # Infrastructure
+  - name: arangodb
+    version: "0.1.0"
+    repository: "file://charts/arangodb"
+    condition: arangodb.enabled
+  - name: kafka
+    version: "0.1.0"
+    repository: "file://charts/kafka"
+    condition: kafka.enabled
+
+  # Collectors
+  - name: gobmp
+    version: "0.1.0"
+    repository: "file://charts/gobmp"
+    condition: gobmp.enabled
+  - name: telegraf-ingress
+    version: "0.1.0"
+    repository: "file://charts/telegraf-ingress"
+    condition: telegraf-ingress.enabled
+
+  # Base Processors
+  - name: gobmp-arango
+    version: "0.1.0"
+    repository: "file://charts/gobmp-arango"
+    condition: gobmp-arango.enabled
+  - name: linkstate-edge
+    version: "0.1.0"
+    repository: "file://charts/linkstate-edge"
+    condition: linkstate-edge.enabled
+
+  # Graph Processors
+  - name: igp-graph
+    version: "0.1.0"
+    repository: "file://charts/igp-graph"
+    condition: igp-graph.enabled
+  - name: ip-graph
+    version: "0.1.0"
+    repository: "file://charts/ip-graph"
+    condition: ip-graph.enabled
+  - name: srv6-localsids
+    version: "0.1.0"
+    repository: "file://charts/srv6-localsids"
+    condition: srv6-localsids.enabled
+
+  # Services
+  - name: api
+    version: "0.1.0"
+    repository: "file://charts/api"
+    condition: api.enabled
+  - name: ui
+    version: "0.1.0"
+    repository: "file://charts/ui"
+    condition: ui.enabled
+
+  # Telemetry
+  - name: telegraf-egress
+    version: "0.1.0"
+    repository: "file://charts/telegraf-egress"
+    condition: telegraf-egress.enabled
+  - name: influxdb
+    version: "0.1.0"
+    repository: "file://charts/influxdb"
+    condition: influxdb.enabled
+  - name: grafana
+    version: "0.1.0"
+    repository: "file://charts/grafana"
+    condition: grafana.enabled

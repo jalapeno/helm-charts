@@ -1,0 +1,31 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: influxdb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: influxdb
+spec:
+  ports:
+  - port: 8086
+  selector:
+    app: influxdb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: influxdb-np
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: influxdb
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - name: 8086-tcp
+    port: 8086
+    nodePort: {{ .Values.service.nodePort }}
+    targetPort: 8086
+  selector:
+    app: influxdb
+{{- end }}

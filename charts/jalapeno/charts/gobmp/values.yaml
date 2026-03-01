@@ -1,0 +1,15 @@
+enabled: true
+
+image:
+  repository: sbezverk/gobmp
+  tag: latest
+
+replicas: 1
+verbosity: "5"
+
+service:
+  type: NodePort
+  bmpPort: 5000
+  bmpNodePort: 30511
+  perfPort: 56767
+  perfNodePort: 30767

@@ -1,0 +1,18 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: telegraf-ingress-np
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: telegraf-ingress
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - name: gnmi
+    port: {{ .Values.service.port }}
+    nodePort: {{ .Values.service.nodePort }}
+    targetPort: {{ .Values.service.port }}
+  selector:
+    app: telegraf-ingress
+{{- end }}

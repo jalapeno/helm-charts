@@ -1,0 +1,38 @@
+enabled: true
+
+zookeeper:
+  image:
+    repository: k8s.gcr.io/kubernetes-zookeeper
+    tag: "1.0-3.4.10"
+  replicas: 1
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "0.5"
+  persistence:
+    size: 10Gi
+    storageClass: ""
+  hostPath:
+    enabled: false
+    path: /var/lib/zookeeper
+
+broker:
+  image:
+    repository: solsson/kafka
+    tag: latest
+  initImage: "solsson/kafka-initutils@sha256:c8582b9df3b3ca9d804e2d914994411fb9b2d94353c4d5476f0a63cf75e59eb0"
+  replicas: 1
+  persistence:
+    size: 50Gi
+    storageClass: ""
+  hostPath:
+    enabled: false
+    path: /var/lib/kafka/data
+  service:
+    type: NodePort
+    nodePort: 30092
+  config:
+    numPartitions: 1
+    autoCreateTopics: true
+    deleteTopicEnable: true
+    logRetentionHours: 1

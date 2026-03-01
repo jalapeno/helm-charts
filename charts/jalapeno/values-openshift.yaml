@@ -1,0 +1,62 @@
+# values-openshift.yaml
+# Overrides for deploying Jalapeno on OpenShift.
+#
+# Usage:
+#   helm install jalapeno charts/jalapeno \
+#     -f charts/jalapeno/values-openshift.yaml \
+#     --namespace jalapeno --create-namespace
+#
+# Prerequisites:
+#   - oc login to your OpenShift cluster
+#   - Appropriate SecurityContextConstraints must be configured
+#
+# Note: OpenShift Routes can be created separately or via an Ingress controller.
+# This values file switches services to ClusterIP; expose via Routes as needed.
+
+# Use ClusterIP instead of NodePort; expose via OpenShift Routes
+arangodb:
+  service:
+    type: ClusterIP
+    nodePort: null
+  persistence:
+    data:
+      storageClass: ""
+    appdata:
+      storageClass: ""
+
+kafka:
+  broker:
+    service:
+      type: ClusterIP
+      nodePort: null
+
+gobmp:
+  service:
+    type: ClusterIP
+    bmpNodePort: null
+    perfNodePort: null
+
+telegraf-ingress:
+  service:
+    type: ClusterIP
+    nodePort: null
+
+api:
+  service:
+    type: ClusterIP
+    nodePort: null
+
+ui:
+  service:
+    type: ClusterIP
+    nodePort: null
+
+influxdb:
+  service:
+    type: ClusterIP
+    nodePort: null
+
+grafana:
+  service:
+    type: ClusterIP
+    nodePort: null

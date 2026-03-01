@@ -1,0 +1,31 @@
+{{- if .Values.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telegraf-egress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: telegraf-egress
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: telegraf-egress
+  template:
+    metadata:
+      labels:
+        app: telegraf-egress
+    spec:
+      containers:
+      - name: telegraf
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        volumeMounts:
+        - mountPath: /etc/telegraf/telegraf.conf
+          name: telegraf-egress-config
+          subPath: telegraf.conf
+          readOnly: true
+      volumes:
+      - name: telegraf-egress-config
+        configMap:
+          name: telegraf-egress-config
+{{- end }}

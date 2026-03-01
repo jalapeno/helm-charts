@@ -1,0 +1,79 @@
+{{- if .Values.gobmp.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gobmp-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+    app: gobmp
+data:
+  gobmp.yaml: |
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gobmp
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+    app: gobmp
+spec:
+  type: {{ .Values.gobmp.service.type }}
+  ports:
+  - name: bmp
+    port: {{ .Values.gobmp.service.bmpPort }}
+    nodePort: {{ .Values.gobmp.service.bmpNodePort }}
+    targetPort: {{ .Values.gobmp.service.bmpPort }}
+    protocol: TCP
+  - name: perf
+    port: {{ .Values.gobmp.service.perfPort }}
+    nodePort: {{ .Values.gobmp.service.perfNodePort }}
+    targetPort: {{ .Values.gobmp.service.perfPort }}
+    protocol: TCP
+  selector:
+    app: gobmp
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gobmp
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+    app: gobmp
+spec:
+  replicas: {{ .Values.gobmp.replicas }}
+  selector:
+    matchLabels:
+      app: gobmp
+  template:
+    metadata:
+      labels:
+        {{- include "tenant.labels" . | nindent 8 }}
+        app: gobmp
+    spec:
+      containers:
+      - name: gobmp
+        image: "{{ .Values.gobmp.image.repository }}:{{ .Values.gobmp.image.tag }}"
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+        args:
+        - --v
+        - {{ .Values.gobmp.verbosity | quote }}
+        - --kafka-server
+        - {{ .Values.global.kafka.server | quote }}
+        ports:
+        - containerPort: {{ .Values.gobmp.service.bmpPort }}
+          protocol: TCP
+          name: bmp
+        - containerPort: {{ .Values.gobmp.service.perfPort }}
+          protocol: TCP
+          name: perf
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/gobmp
+      volumes:
+      - name: config-volume
+        configMap:
+          name: gobmp-config
+{{- end }}

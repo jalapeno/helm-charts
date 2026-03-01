@@ -1,0 +1,50 @@
+{{- if .Values.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jalapeno-api
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: jalapeno-api
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: jalapeno-api
+  template:
+    metadata:
+      labels:
+        app: jalapeno-api
+    spec:
+      containers:
+      - name: api
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.global.imagePullPolicy | default "Always" }}
+        env:
+        - name: JALAPENO_DATABASE_SERVER
+          value: {{ .Values.global.arangodb.server | quote }}
+        - name: JALAPENO_DATABASE_NAME
+          value: {{ .Values.global.arangodb.databaseName | quote }}
+        {{- with .Values.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.service.targetPort }}
+          initialDelaySeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.service.targetPort }}
+        ports:
+        - containerPort: {{ .Values.service.targetPort }}
+        volumeMounts:
+        - name: credentials
+          mountPath: /credentials
+      volumes:
+      - name: credentials
+        secret:
+          secretName: {{ .Release.Name }}-jalapeno
+{{- end }}

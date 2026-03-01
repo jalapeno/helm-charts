@@ -1,0 +1,5 @@
+apiVersion: v2
+name: telegraf-ingress
+description: Telegraf ingress collector for gNMI telemetry data
+type: application
+version: 0.1.0

@@ -1,0 +1,8 @@
+enabled: true
+
+image:
+  repository: iejalapeno/linkstate-edge
+  tag: latest
+
+replicas: 1
+verbosity: "5"

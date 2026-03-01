@@ -1,0 +1,13 @@
+enabled: true
+
+image:
+  repository: iejalapeno/jalapeno-ui
+  tag: latest
+
+replicas: 1
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 80
+  nodePort: 30700

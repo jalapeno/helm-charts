@@ -1,0 +1,26 @@
+enabled: true
+
+image:
+  repository: arangodb
+  tag: "3.10.12"
+
+rootPassword: "jalapeno"
+
+persistence:
+  data:
+    size: 80Gi
+    storageClass: ""
+  appdata:
+    size: 20Gi
+    storageClass: ""
+
+hostPath:
+  enabled: false
+  dataPath: /var/lib/arangodb3
+  appdataPath: /var/lib/arangodb3-apps
+
+service:
+  type: NodePort
+  nodePort: 30852
+
+resources: {}

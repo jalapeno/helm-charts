@@ -1,0 +1,61 @@
+{{- if .Values.igpGraph.enabled }}
+{{- $arangoServer := .Values.global.arangodb.server }}
+{{- $arangoDb := include "tenant.databaseName" . }}
+{{- $arangoPassword := .Values.global.credentials.arangoPassword }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: igp-graph
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+    app: igp-graph
+spec:
+  replicas: {{ .Values.igpGraph.replicas }}
+  selector:
+    matchLabels:
+      app: igp-graph
+  template:
+    metadata:
+      labels:
+        {{- include "tenant.labels" . | nindent 8 }}
+        app: igp-graph
+    spec:
+      initContainers:
+      - name: wait-for-data
+        image: {{ .Values.igpGraph.initContainer.image }}
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting {{ .Values.igpGraph.initContainer.initialDelay }} seconds for gobmp-arango to start..."
+          sleep {{ .Values.igpGraph.initContainer.initialDelay }}
+          echo "Waiting for base link-state collections to have data..."
+          until [ $(curl -s -u root:{{ $arangoPassword }} "{{ $arangoServer }}/_db/{{ $arangoDb }}/_api/collection/ls_node/count" | grep -o '"count":[0-9]*' | cut -d':' -f2) -gt 0 ] 2>/dev/null; do
+            echo "ls_node collection empty, waiting...";
+            sleep {{ .Values.igpGraph.initContainer.checkInterval }};
+          done
+          echo "Base link-state data available, waiting {{ .Values.igpGraph.initContainer.stabilizationDelay }} more seconds..."
+          sleep {{ .Values.igpGraph.initContainer.stabilizationDelay }}
+          echo "Starting IGP graph processor"
+      containers:
+      - name: igp-graph
+        image: "{{ .Values.igpGraph.image.repository }}:{{ .Values.igpGraph.image.tag }}"
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+        args:
+        - --v
+        - {{ .Values.igpGraph.verbosity | quote }}
+        - --message-server
+        - {{ .Values.global.kafka.server | quote }}
+        - --database-server
+        - {{ $arangoServer | quote }}
+        - --database-name
+        - {{ $arangoDb | quote }}
+        volumeMounts:
+        - name: credentials
+          mountPath: /credentials
+      volumes:
+      - name: credentials
+        secret:
+          secretName: {{ include "tenant.credentialsSecret" . }}
+{{- end }}

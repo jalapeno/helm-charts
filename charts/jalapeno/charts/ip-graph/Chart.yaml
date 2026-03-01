@@ -1,0 +1,5 @@
+apiVersion: v2
+name: ip-graph
+description: IP graph processor - builds IP topology graph from BGP and IGP data
+type: application
+version: 0.1.0

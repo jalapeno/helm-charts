@@ -1,0 +1,50 @@
+# values-topology-only.yaml
+# Deploys only the topology stack: GoBMP, Kafka, GoBMP-Arango, ArangoDB,
+# graph processors (igp-graph, ip-graph), and the API.
+# Disables the telemetry stack (Telegraf, InfluxDB, Grafana).
+#
+# Usage:
+#   helm install jalapeno charts/jalapeno \
+#     -f charts/jalapeno/values-topology-only.yaml \
+#     --namespace jalapeno --create-namespace
+
+# Telemetry stack: disabled
+telegraf-ingress:
+  enabled: false
+
+telegraf-egress:
+  enabled: false
+
+influxdb:
+  enabled: false
+
+grafana:
+  enabled: false
+
+# Topology stack: all enabled (these are defaults, listed for clarity)
+arangodb:
+  enabled: true
+
+kafka:
+  enabled: true
+
+gobmp:
+  enabled: true
+
+gobmp-arango:
+  enabled: true
+
+linkstate-edge:
+  enabled: true
+
+igp-graph:
+  enabled: true
+
+ip-graph:
+  enabled: true
+
+api:
+  enabled: true
+
+ui:
+  enabled: true

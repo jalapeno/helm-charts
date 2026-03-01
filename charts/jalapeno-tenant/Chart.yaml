@@ -1,0 +1,19 @@
+apiVersion: v2
+name: jalapeno-tenant
+description: >-
+  Jalapeno multi-tenant chart. Deploys per-tenant collectors, processors,
+  and graph processors in an isolated namespace, pointing at shared
+  infrastructure (Kafka, ArangoDB) in the base Jalapeno namespace.
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+maintainers:
+  - name: Jalapeno Team
+    url: https://github.com/jalapeno
+home: https://github.com/jalapeno/jalapeno
+sources:
+  - https://github.com/jalapeno/helm-charts
+keywords:
+  - sdn
+  - multi-tenant
+  - jalapeno

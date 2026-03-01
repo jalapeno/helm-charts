@@ -1,0 +1,30 @@
+{{- if .Values.srv6Localsids.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: srv6-localsids
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+    app: srv6-localsids
+spec:
+  replicas: {{ .Values.srv6Localsids.replicas }}
+  selector:
+    matchLabels:
+      app: srv6-localsids
+  template:
+    metadata:
+      labels:
+        {{- include "tenant.labels" . | nindent 8 }}
+        app: srv6-localsids
+    spec:
+      containers:
+      - name: srv6-localsids
+        image: "{{ .Values.srv6Localsids.image.repository }}:{{ .Values.srv6Localsids.image.tag }}"
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+      imagePullSecrets:
+      - name: regcred
+{{- end }}
