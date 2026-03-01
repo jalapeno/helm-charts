@@ -20,7 +20,7 @@ Install multi-tenant
 ```
 helm install jalapeno charts/jalapeno \
   -f charts/jalapeno/values-multi-tenant-infra.yaml \
-  --namespace jalapeno --create-namespace
+  --namespace jalapeno --create-namespace \
   --set arangodb.hostPath.enabled=true \
   --set kafka.zookeeper.hostPath.enabled=true \
   --set kafka.broker.hostPath.enabled=true

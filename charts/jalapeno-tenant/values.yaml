@@ -36,9 +36,9 @@ gobmp:
   service:
     type: NodePort
     bmpPort: 5000
-    bmpNodePort: 30511
+    bmpNodePort: null
     perfPort: 56767
-    perfNodePort: 30767
+    perfNodePort: null
 
 # ---------------------------------------------------------------------------
 # Base Processors

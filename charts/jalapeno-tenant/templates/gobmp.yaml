@@ -23,12 +23,16 @@ spec:
   ports:
   - name: bmp
     port: {{ .Values.gobmp.service.bmpPort }}
+    {{- if .Values.gobmp.service.bmpNodePort }}
     nodePort: {{ .Values.gobmp.service.bmpNodePort }}
+    {{- end }}
     targetPort: {{ .Values.gobmp.service.bmpPort }}
     protocol: TCP
   - name: perf
     port: {{ .Values.gobmp.service.perfPort }}
+    {{- if .Values.gobmp.service.perfNodePort }}
     nodePort: {{ .Values.gobmp.service.perfNodePort }}
+    {{- end }}
     targetPort: {{ .Values.gobmp.service.perfPort }}
     protocol: TCP
   selector:

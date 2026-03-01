@@ -98,7 +98,7 @@ For memorable, operator-friendly names, use adjective-noun combinations:
 swift-falcon   bright-mesa    calm-ridge     bold-creek
 keen-pine      warm-cedar     cool-hawk      wild-wolf
 pure-bear      sage-lake      vast-peak      fair-vale
-true-dale      deep-ford      live-glen      glad-moor
+true-dale      deep-fjord     live-glen      glad-moor
 fine-reef      rare-cove      tame-arch      free-dune
 ```
 
