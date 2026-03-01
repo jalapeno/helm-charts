@@ -122,6 +122,8 @@ spec:
       accessModes: ["ReadWriteOnce"]
       {{- if .Values.zookeeper.persistence.storageClass }}
       storageClassName: {{ .Values.zookeeper.persistence.storageClass | quote }}
+      {{- else if .Values.zookeeper.hostPath.enabled }}
+      storageClassName: ""
       {{- end }}
       resources:
         requests:

@@ -126,6 +126,8 @@ spec:
       accessModes: ["ReadWriteOnce"]
       {{- if .Values.broker.persistence.storageClass }}
       storageClassName: {{ .Values.broker.persistence.storageClass | quote }}
+      {{- else if .Values.broker.hostPath.enabled }}
+      storageClassName: ""
       {{- end }}
       resources:
         requests:

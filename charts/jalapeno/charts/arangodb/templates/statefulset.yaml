@@ -45,6 +45,8 @@ spec:
       accessModes: ["ReadWriteOnce"]
       {{- if .Values.persistence.data.storageClass }}
       storageClassName: {{ .Values.persistence.data.storageClass | quote }}
+      {{- else if .Values.hostPath.enabled }}
+      storageClassName: ""
       {{- end }}
       resources:
         requests:
@@ -55,6 +57,8 @@ spec:
       accessModes: ["ReadWriteOnce"]
       {{- if .Values.persistence.appdata.storageClass }}
       storageClassName: {{ .Values.persistence.appdata.storageClass | quote }}
+      {{- else if .Values.hostPath.enabled }}
+      storageClassName: ""
       {{- end }}
       resources:
         requests:
