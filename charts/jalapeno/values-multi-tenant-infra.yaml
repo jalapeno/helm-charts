@@ -1,0 +1,68 @@
+# values-multi-tenant-infra.yaml
+# Deploys only shared infrastructure for multi-tenant mode:
+#   - ArangoDB (shared graph database, per-tenant databases within it)
+#   - Kafka + Zookeeper (shared message bus)
+#   - API (shared, currently single-tenant; multi-tenant refactor planned)
+#   - UI (shared)
+#
+# Collectors and processors are NOT deployed here -- each tenant installs
+# their own via the jalapeno-tenant chart.
+#
+# Usage:
+#   helm install jalapeno charts/jalapeno \
+#     -f charts/jalapeno/values-multi-tenant-infra.yaml \
+#     --namespace jalapeno --create-namespace
+#
+#   Then per tenant:
+#     helm install swift-falcon charts/jalapeno-tenant \
+#       --namespace swift-falcon --create-namespace
+
+# Shared infrastructure: enabled
+arangodb:
+  enabled: true
+
+kafka:
+  enabled: true
+
+# Shared services: enabled
+# Note: API currently connects to a single database (default: "jalapeno").
+# Multi-tenant API refactor is planned. In the interim, the API serves
+# the default database. Tenants needing direct API access can deploy
+# a per-tenant API instance via the jalapeno-tenant chart.
+api:
+  enabled: true
+
+ui:
+  enabled: true
+
+# Per-tenant components: disabled in shared infra
+gobmp:
+  enabled: false
+
+telegraf-ingress:
+  enabled: false
+
+gobmp-arango:
+  enabled: false
+
+linkstate-edge:
+  enabled: false
+
+igp-graph:
+  enabled: false
+
+ip-graph:
+  enabled: false
+
+srv6-localsids:
+  enabled: false
+
+# Telemetry stack: disabled (enable per-tenant if needed)
+telegraf-egress:
+  enabled: false
+
+influxdb:
+  enabled: false
+
+grafana:
+  enabled: false

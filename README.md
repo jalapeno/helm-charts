@@ -52,18 +52,30 @@ helm install jalapeno charts/jalapeno \
 
 ## Multi-Tenant Deployment
 
-Multi-tenant mode deploys shared infrastructure (Kafka, ArangoDB) in the `jalapeno` namespace, with per-tenant collectors and processors in isolated namespaces. Each tenant gets its own ArangoDB database.
+Multi-tenant mode deploys shared infrastructure (ArangoDB, Kafka, API, UI) in the
+`jalapeno` namespace, with per-tenant collectors and processors in isolated namespaces.
+Each tenant gets its own ArangoDB database, GoBMP collector, and graph processors.
 
 ### Step 1: Deploy shared infrastructure
 
+This installs only ArangoDB, Kafka/Zookeeper, the API, and UI -- no collectors or
+processors. Those are deployed per-tenant in step 2.
+
 ```bash
 helm install jalapeno charts/jalapeno \
+  -f charts/jalapeno/values-multi-tenant-infra.yaml \
   --namespace jalapeno --create-namespace
 ```
 
+> **Note on the API:** The API currently connects to a single ArangoDB database.
+> A multi-tenant API refactor is planned to allow querying across tenant databases.
+> In the interim, the shared API serves the default `jalapeno` database.
+
 ### Step 2: Deploy a tenant
 
-The Helm release name becomes the tenant name (and ArangoDB database name):
+The Helm release name becomes the tenant name (and ArangoDB database name).
+Each tenant gets its own GoBMP, GoBMP-Arango, linkstate-edge, igp-graph, and ip-graph
+in an isolated namespace, all pointing at the shared Kafka and ArangoDB.
 
 ```bash
 helm install swift-falcon charts/jalapeno-tenant \

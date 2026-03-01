@@ -33,11 +33,4 @@ data:
       password = {{ .Values.config.influxdbPassword | quote }}
       precision = "s"
       timeout = "5s"
-
-    [[outputs.file]]
-      files = ["metrics.out"]
-      rotation_interval = "1h"
-      rotation_max_size = "20MB"
-      rotation_max_archives = 3
-      data_format = "json"
 {{- end }}
