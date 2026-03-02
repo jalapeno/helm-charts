@@ -42,4 +42,4 @@ dependencies:
   repository: file://charts/grafana
   version: 0.1.0
 digest: sha256:81f2c31290c5736beac72e75114036edd5f43a2206df3faea18d906f7d9e10db
-generated: "2026-03-01T13:17:03.745311-08:00"
+generated: "2026-03-01T21:03:25.853008-08:00"
