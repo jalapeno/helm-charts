@@ -1,0 +1,143 @@
+name: Lint and Test Charts
+
+on:
+  pull_request:
+    paths:
+      - "charts/**"
+      - ".github/workflows/lint-test.yaml"
+  push:
+    branches: [main]
+    paths:
+      - "charts/**"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Lint jalapeno chart
+        run: |
+          helm dependency build charts/jalapeno
+          helm lint charts/jalapeno
+
+      - name: Lint jalapeno-tenant chart
+        run: helm lint charts/jalapeno-tenant
+
+      - name: Validate base install templates
+        run: |
+          helm template jalapeno charts/jalapeno \
+            --namespace jalapeno > /dev/null
+
+      - name: Validate topology-only templates
+        run: |
+          helm template jalapeno charts/jalapeno \
+            -f charts/jalapeno/values-topology-only.yaml \
+            --namespace jalapeno > /dev/null
+
+      - name: Validate multi-tenant infra templates
+        run: |
+          helm template jalapeno charts/jalapeno \
+            -f charts/jalapeno/values-multi-tenant-infra.yaml \
+            --namespace jalapeno > /dev/null
+
+      - name: Validate kind templates
+        run: |
+          helm template jalapeno charts/jalapeno \
+            -f charts/jalapeno/values-kind.yaml \
+            --namespace jalapeno > /dev/null
+
+      - name: Validate openshift templates
+        run: |
+          helm template jalapeno charts/jalapeno \
+            -f charts/jalapeno/values-openshift.yaml \
+            --namespace jalapeno > /dev/null
+
+      - name: Validate tenant chart templates
+        run: |
+          helm template swift-falcon charts/jalapeno-tenant \
+            --namespace swift-falcon > /dev/null
+
+  install-test:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Create Kind cluster
+        uses: helm/kind-action@v1
+
+      - name: Build chart dependencies
+        run: helm dependency build charts/jalapeno
+
+      - name: Install base chart on Kind
+        run: |
+          helm install jalapeno charts/jalapeno \
+            -f charts/jalapeno/values-kind.yaml \
+            --namespace jalapeno --create-namespace \
+            --wait --timeout 3m
+
+      - name: Verify pods are running
+        run: |
+          kubectl get pods -n jalapeno
+          kubectl wait --for=condition=ready pod -l app=arangodb \
+            -n jalapeno --timeout=120s
+          kubectl wait --for=condition=ready pod -l app=kafka \
+            -n jalapeno --timeout=120s
+          kubectl wait --for=condition=ready pod -l app=jalapeno-api \
+            -n jalapeno --timeout=120s
+
+      - name: Uninstall base chart
+        run: |
+          helm uninstall jalapeno -n jalapeno
+          kubectl delete namespace jalapeno --wait
+
+      - name: Install topology-only chart on Kind
+        run: |
+          helm install jalapeno charts/jalapeno \
+            -f charts/jalapeno/values-kind.yaml \
+            -f charts/jalapeno/values-topology-only.yaml \
+            --namespace jalapeno --create-namespace \
+            --wait --timeout 3m
+
+      - name: Verify topology-only pods
+        run: |
+          kubectl get pods -n jalapeno
+          TELEGRAF_PODS=$(kubectl get pods -n jalapeno -l app=telegraf-ingress --no-headers 2>/dev/null | wc -l)
+          if [ "$TELEGRAF_PODS" -gt 0 ]; then
+            echo "ERROR: telegraf-ingress should not be running in topology-only mode"
+            exit 1
+          fi
+          echo "Topology-only validation passed: no telemetry pods found"
+
+      - name: Uninstall and test multi-tenant
+        run: |
+          helm uninstall jalapeno -n jalapeno
+          kubectl delete namespace jalapeno --wait
+
+          helm install jalapeno charts/jalapeno \
+            -f charts/jalapeno/values-multi-tenant-infra.yaml \
+            -f charts/jalapeno/values-kind.yaml \
+            --namespace jalapeno --create-namespace \
+            --wait --timeout 3m
+
+          helm install swift-falcon charts/jalapeno-tenant \
+            --namespace swift-falcon --create-namespace \
+            --wait --timeout 2m
+
+          echo "=== Shared infra namespace ==="
+          kubectl get pods -n jalapeno
+
+          echo "=== Tenant namespace ==="
+          kubectl get pods -n swift-falcon
+
+          kubectl wait --for=condition=ready pod -l app=gobmp \
+            -n swift-falcon --timeout=60s
