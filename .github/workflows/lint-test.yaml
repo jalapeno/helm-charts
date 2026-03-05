@@ -10,6 +10,10 @@ on:
     paths:
       - "charts/**"
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -75,6 +79,15 @@ jobs:
       - name: Create Kind cluster
         uses: helm/kind-action@v1
 
+      - name: Configure GHCR pull access
+        run: |
+          kubectl create namespace jalapeno
+          kubectl create secret docker-registry ghcr-auth \
+            --docker-server=ghcr.io \
+            --docker-username=${{ github.actor }} \
+            --docker-password=${{ secrets.GITHUB_TOKEN }} \
+            -n jalapeno
+
       - name: Build chart dependencies
         run: helm dependency build charts/jalapeno
 
@@ -82,8 +95,9 @@ jobs:
         run: |
           helm install jalapeno charts/jalapeno \
             -f charts/jalapeno/values-kind.yaml \
-            --namespace jalapeno --create-namespace \
-            --wait --timeout 3m
+            --namespace jalapeno \
+            --set global.imagePullSecrets[0].name=ghcr-auth \
+            --wait --timeout 8m
 
       - name: Verify pods are running
         run: |
@@ -95,18 +109,39 @@ jobs:
           kubectl wait --for=condition=ready pod -l app=jalapeno-api \
             -n jalapeno --timeout=120s
 
-      - name: Uninstall base chart
+      - name: Debug on failure
+        if: failure()
         run: |
-          helm uninstall jalapeno -n jalapeno
-          kubectl delete namespace jalapeno --wait
+          echo "=== Pod status ==="
+          kubectl get pods -n jalapeno -o wide
+          echo ""
+          echo "=== Pod descriptions ==="
+          kubectl describe pods -n jalapeno
+          echo ""
+          echo "=== Events ==="
+          kubectl get events -n jalapeno --sort-by='.lastTimestamp'
+
+      - name: Uninstall base chart
+        if: always()
+        run: |
+          helm uninstall jalapeno -n jalapeno || true
+          kubectl delete namespace jalapeno --wait || true
 
       - name: Install topology-only chart on Kind
         run: |
+          kubectl create namespace jalapeno
+          kubectl create secret docker-registry ghcr-auth \
+            --docker-server=ghcr.io \
+            --docker-username=${{ github.actor }} \
+            --docker-password=${{ secrets.GITHUB_TOKEN }} \
+            -n jalapeno
+
           helm install jalapeno charts/jalapeno \
             -f charts/jalapeno/values-kind.yaml \
             -f charts/jalapeno/values-topology-only.yaml \
-            --namespace jalapeno --create-namespace \
-            --wait --timeout 3m
+            --namespace jalapeno \
+            --set global.imagePullSecrets[0].name=ghcr-auth \
+            --wait --timeout 8m
 
       - name: Verify topology-only pods
         run: |
@@ -120,18 +155,34 @@ jobs:
 
       - name: Uninstall and test multi-tenant
         run: |
-          helm uninstall jalapeno -n jalapeno
-          kubectl delete namespace jalapeno --wait
+          helm uninstall jalapeno -n jalapeno || true
+          kubectl delete namespace jalapeno --wait || true
+
+          kubectl create namespace jalapeno
+          kubectl create secret docker-registry ghcr-auth \
+            --docker-server=ghcr.io \
+            --docker-username=${{ github.actor }} \
+            --docker-password=${{ secrets.GITHUB_TOKEN }} \
+            -n jalapeno
 
           helm install jalapeno charts/jalapeno \
             -f charts/jalapeno/values-multi-tenant-infra.yaml \
             -f charts/jalapeno/values-kind.yaml \
-            --namespace jalapeno --create-namespace \
-            --wait --timeout 3m
+            --namespace jalapeno \
+            --set global.imagePullSecrets[0].name=ghcr-auth \
+            --wait --timeout 8m
+
+          kubectl create namespace swift-falcon
+          kubectl create secret docker-registry ghcr-auth \
+            --docker-server=ghcr.io \
+            --docker-username=${{ github.actor }} \
+            --docker-password=${{ secrets.GITHUB_TOKEN }} \
+            -n swift-falcon
 
           helm install swift-falcon charts/jalapeno-tenant \
-            --namespace swift-falcon --create-namespace \
-            --wait --timeout 2m
+            --namespace swift-falcon \
+            --set global.imagePullSecrets[0].name=ghcr-auth \
+            --wait --timeout 5m
 
           echo "=== Shared infra namespace ==="
           kubectl get pods -n jalapeno
@@ -141,3 +192,14 @@ jobs:
 
           kubectl wait --for=condition=ready pod -l app=gobmp \
             -n swift-falcon --timeout=60s
+
+      - name: Debug multi-tenant on failure
+        if: failure()
+        run: |
+          echo "=== jalapeno namespace ==="
+          kubectl get pods -n jalapeno -o wide 2>/dev/null || true
+          kubectl get events -n jalapeno --sort-by='.lastTimestamp' 2>/dev/null || true
+          echo ""
+          echo "=== swift-falcon namespace ==="
+          kubectl get pods -n swift-falcon -o wide 2>/dev/null || true
+          kubectl get events -n swift-falcon --sort-by='.lastTimestamp' 2>/dev/null || true

@@ -16,6 +16,7 @@ spec:
       labels:
         app: gobmp
     spec:
+      {{- include "jalapeno.imagePullSecrets" . | nindent 6 }}
       containers:
       - name: gobmp
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

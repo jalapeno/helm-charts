@@ -18,6 +18,7 @@ spec:
         app: arangodb
         storage: persistent
     spec:
+      {{- include "jalapeno.imagePullSecrets" . | nindent 6 }}
       terminationGracePeriodSeconds: 5
       containers:
       - name: arangodb

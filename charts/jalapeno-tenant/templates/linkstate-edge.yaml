@@ -18,6 +18,7 @@ spec:
         {{- include "tenant.labels" . | nindent 8 }}
         app: linkstate-edge
     spec:
+      {{- include "tenant.imagePullSecrets" . | nindent 6 }}
       containers:
       - name: linkstate-edge
         image: "{{ .Values.linkstateEdge.image.repository }}:{{ .Values.linkstateEdge.image.tag }}"

@@ -21,6 +21,7 @@ spec:
         {{- include "tenant.labels" . | nindent 8 }}
         app: igp-graph
     spec:
+      {{- include "tenant.imagePullSecrets" . | nindent 6 }}
       initContainers:
       - name: wait-for-data
         image: {{ .Values.igpGraph.initContainer.image }}

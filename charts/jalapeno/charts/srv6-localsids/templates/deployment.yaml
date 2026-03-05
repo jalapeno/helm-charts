@@ -23,6 +23,5 @@ spec:
         env:
         - name: PYTHONUNBUFFERED
           value: "1"
-      imagePullSecrets:
-      - name: regcred
+      {{- include "jalapeno.imagePullSecrets" . | nindent 6 }}
 {{- end }}

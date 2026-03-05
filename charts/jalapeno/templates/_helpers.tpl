@@ -97,3 +97,14 @@ Image pull policy from global config.
 {{- define "jalapeno.imagePullPolicy" -}}
 {{- .Values.global.imagePullPolicy | default "Always" -}}
 {{- end }}
+
+{{/*
+Image pull secrets from global config.
+Usage: {{- include "jalapeno.imagePullSecrets" . | nindent 6 }}
+*/}}
+{{- define "jalapeno.imagePullSecrets" -}}
+{{- with .Values.global.imagePullSecrets }}
+imagePullSecrets:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}

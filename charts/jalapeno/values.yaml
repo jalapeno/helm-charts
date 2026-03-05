@@ -1,5 +1,6 @@
 global:
   imagePullPolicy: Always
+  imagePullSecrets: []
 
   kafka:
     server: "broker:9092"

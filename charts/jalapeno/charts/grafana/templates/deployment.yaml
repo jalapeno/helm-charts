@@ -16,6 +16,7 @@ spec:
       labels:
         app: grafana
     spec:
+      {{- include "jalapeno.imagePullSecrets" . | nindent 6 }}
       containers:
       - name: grafana
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

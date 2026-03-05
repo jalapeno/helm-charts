@@ -50,6 +50,7 @@ spec:
       labels:
         app: kafka
     spec:
+      {{- include "jalapeno.imagePullSecrets" . | nindent 6 }}
       serviceAccountName: {{ include "jalapeno.parentFullname" . }}
       terminationGracePeriodSeconds: 30
       initContainers:

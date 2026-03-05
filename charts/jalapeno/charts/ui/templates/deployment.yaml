@@ -16,6 +16,7 @@ spec:
       labels:
         app: jalapeno-ui
     spec:
+      {{- include "jalapeno.imagePullSecrets" . | nindent 6 }}
       containers:
       - name: jalapeno-ui
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

@@ -25,6 +25,5 @@ spec:
         env:
         - name: PYTHONUNBUFFERED
           value: "1"
-      imagePullSecrets:
-      - name: regcred
+      {{- include "tenant.imagePullSecrets" . | nindent 6 }}
 {{- end }}

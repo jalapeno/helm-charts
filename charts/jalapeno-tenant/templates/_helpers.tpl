@@ -36,6 +36,16 @@ jalapeno.io/tenant: {{ include "tenant.name" . }}
 {{- end }}
 
 {{/*
+Image pull secrets from global config.
+*/}}
+{{- define "tenant.imagePullSecrets" -}}
+{{- with .Values.global.imagePullSecrets }}
+imagePullSecrets:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}
+
+{{/*
 Adjective-noun name suggestions for tenants.
 
 Suggested tenant names (adjective-noun combinations):

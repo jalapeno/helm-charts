@@ -18,6 +18,7 @@ spec:
         {{- include "tenant.labels" . | nindent 8 }}
         app: gobmp-arango
     spec:
+      {{- include "tenant.imagePullSecrets" . | nindent 6 }}
       containers:
       - name: gobmp-arango
         image: "{{ .Values.gobmpArango.image.repository }}:{{ .Values.gobmpArango.image.tag }}"

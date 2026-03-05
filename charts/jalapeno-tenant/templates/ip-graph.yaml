@@ -21,6 +21,7 @@ spec:
         {{- include "tenant.labels" . | nindent 8 }}
         app: ip-graph
     spec:
+      {{- include "tenant.imagePullSecrets" . | nindent 6 }}
       initContainers:
       - name: wait-for-data
         image: {{ .Values.ipGraph.initContainer.image }}

@@ -50,6 +50,7 @@ spec:
       labels:
         app: zookeeper
     spec:
+      {{- include "jalapeno.imagePullSecrets" . | nindent 6 }}
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

@@ -8,6 +8,7 @@ tenant:
 
 global:
   imagePullPolicy: Always
+  imagePullSecrets: []
 
   # Shared infrastructure endpoints (must point to the base Jalapeno namespace)
   kafka:

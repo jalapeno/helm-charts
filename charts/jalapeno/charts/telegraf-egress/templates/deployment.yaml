@@ -16,6 +16,7 @@ spec:
       labels:
         app: telegraf-egress
     spec:
+      {{- include "jalapeno.imagePullSecrets" . | nindent 6 }}
       containers:
       - name: telegraf
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

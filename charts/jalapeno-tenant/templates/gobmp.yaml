@@ -57,6 +57,7 @@ spec:
         {{- include "tenant.labels" . | nindent 8 }}
         app: gobmp
     spec:
+      {{- include "tenant.imagePullSecrets" . | nindent 6 }}
       containers:
       - name: gobmp
         image: "{{ .Values.gobmp.image.repository }}:{{ .Values.gobmp.image.tag }}"

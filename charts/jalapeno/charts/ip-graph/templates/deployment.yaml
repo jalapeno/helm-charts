@@ -19,6 +19,7 @@ spec:
       labels:
         app: ip-graph
     spec:
+      {{- include "jalapeno.imagePullSecrets" . | nindent 6 }}
       initContainers:
       - name: wait-for-data
         image: {{ .Values.initContainer.image }}

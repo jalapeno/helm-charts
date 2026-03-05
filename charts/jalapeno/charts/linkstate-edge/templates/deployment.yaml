@@ -16,6 +16,7 @@ spec:
       labels:
         app: linkstate-edge
     spec:
+      {{- include "jalapeno.imagePullSecrets" . | nindent 6 }}
       containers:
       - name: linkstate-edge
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
