@@ -71,20 +71,20 @@ echo YOUR_GITHUB_PAT | helm registry login ghcr.io --username YOUR_GITHUB_USERNA
 
 # Push both charts
 ```
-helm push jalapeno-0.1.0.tgz oci://ghcr.io/jalapeno/helm-charts
-helm push jalapeno-tenant-0.1.0.tgz oci://ghcr.io/jalapeno/helm-charts
+helm push jalapeno-0.2.0.tgz oci://ghcr.io/jalapeno/helm-charts
+helm push jalapeno-tenant-0.2.0.tgz oci://ghcr.io/jalapeno/helm-charts
 ```
 
 # Verify they're published
 ```
-helm show chart oci://ghcr.io/jalapeno/helm-charts/jalapeno --version 0.1.0
-helm show chart oci://ghcr.io/jalapeno/helm-charts/jalapeno-tenant --version 0.1.0
+helm show chart oci://ghcr.io/jalapeno/helm-charts/jalapeno --version 0.2.0
+helm show chart oci://ghcr.io/jalapeno/helm-charts/jalapeno-tenant --version 0.2.0
 ```
 
 Install topology-only
 ```
 helm install jalapeno oci://ghcr.io/jalapeno/helm-charts/jalapeno \
-  --version 0.1.0 \
+  --version 0.2.0 \
   --namespace jalapeno --create-namespace \
   --set telegraf-ingress.enabled=false \
   --set telegraf-egress.enabled=false \
@@ -98,7 +98,7 @@ helm install jalapeno oci://ghcr.io/jalapeno/helm-charts/jalapeno \
 Install base
 ```
 helm install jalapeno oci://ghcr.io/jalapeno/helm-charts/jalapeno \
-  --version 0.1.0 \
+  --version 0.2.0 \
   --namespace jalapeno --create-namespace \
   --set arangodb.hostPath.enabled=true \
   --set kafka.zookeeper.hostPath.enabled=true \
@@ -108,6 +108,6 @@ helm install jalapeno oci://ghcr.io/jalapeno/helm-charts/jalapeno \
 Install tenant
 ```
 helm install swift-falcon oci://ghcr.io/jalapeno/helm-charts/jalapeno-tenant \
-  --version 0.1.0 \
+  --version 0.2.0 \
   --namespace swift-falcon --create-namespace
 ```

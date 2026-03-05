@@ -115,7 +115,7 @@ telegraf-ingress:
 gobmp-arango:
   enabled: true
   image:
-    repository: iejalapeno/gobmp-arango
+    repository: ghcr.io/jalapeno/gobmp-arango
     tag: latest
   replicas: 1
   verbosity: "5"
@@ -124,7 +124,7 @@ gobmp-arango:
 linkstate-edge:
   enabled: true
   image:
-    repository: iejalapeno/linkstate-edge
+    repository: ghcr.io/jalapeno/linkstate-edge
     tag: latest
   replicas: 1
   verbosity: "5"
@@ -136,7 +136,7 @@ linkstate-edge:
 igp-graph:
   enabled: true
   image:
-    repository: iejalapeno/igp-graph
+    repository: ghcr.io/jalapeno/igp-graph
     tag: latest
   replicas: 1
   verbosity: "5"
@@ -149,7 +149,7 @@ igp-graph:
 ip-graph:
   enabled: true
   image:
-    repository: iejalapeno/ip-graph
+    repository: ghcr.io/jalapeno/ip-graph
     tag: latest
   replicas: 1
   verbosity: "5"
@@ -161,7 +161,7 @@ ip-graph:
 srv6-localsids:
   enabled: false
   image:
-    repository: iejalapeno/srv6-localsids
+    repository: ghcr.io/jalapeno/srv6-localsids
     tag: latest
   replicas: 1
 
@@ -172,7 +172,7 @@ srv6-localsids:
 api:
   enabled: true
   image:
-    repository: iejalapeno/jalapeno-api
+    repository: ghcr.io/jalapeno/jalapeno-api
     tag: latest
   replicas: 1
   service:
@@ -191,7 +191,7 @@ api:
 ui:
   enabled: true
   image:
-    repository: iejalapeno/jalapeno-ui
+    repository: ghcr.io/jalapeno/jalapeno-ui
     tag: latest
   replicas: 1
   service:

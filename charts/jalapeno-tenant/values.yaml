@@ -47,7 +47,7 @@ gobmp:
 gobmpArango:
   enabled: true
   image:
-    repository: iejalapeno/gobmp-arango
+    repository: ghcr.io/jalapeno/gobmp-arango
     tag: latest
   replicas: 1
   verbosity: "5"
@@ -56,7 +56,7 @@ gobmpArango:
 linkstateEdge:
   enabled: true
   image:
-    repository: iejalapeno/linkstate-edge
+    repository: ghcr.io/jalapeno/linkstate-edge
     tag: latest
   replicas: 1
   verbosity: "5"
@@ -68,7 +68,7 @@ linkstateEdge:
 igpGraph:
   enabled: true
   image:
-    repository: iejalapeno/igp-graph
+    repository: ghcr.io/jalapeno/igp-graph
     tag: latest
   replicas: 1
   verbosity: "5"
@@ -81,7 +81,7 @@ igpGraph:
 ipGraph:
   enabled: true
   image:
-    repository: iejalapeno/ip-graph
+    repository: ghcr.io/jalapeno/ip-graph
     tag: latest
   replicas: 1
   verbosity: "5"
@@ -93,6 +93,6 @@ ipGraph:
 srv6Localsids:
   enabled: false
   image:
-    repository: iejalapeno/srv6-localsids
+    repository: ghcr.io/jalapeno/srv6-localsids
     tag: latest
   replicas: 1
