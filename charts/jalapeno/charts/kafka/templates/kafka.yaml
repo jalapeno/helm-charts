@@ -85,15 +85,19 @@ spec:
           value: /opt/kafka/libs/extensions/*
         - name: KAFKA_LOG4J_OPTS
           value: -Dlog4j.configuration=file:/etc/kafka/log4j.properties
+        {{- if .Values.broker.jmx.enabled }}
         - name: JMX_PORT
-          value: "5555"
+          value: {{ .Values.broker.jmx.port | quote }}
+        {{- end }}
         ports:
         - name: inside
           containerPort: 9092
         - name: outside
           containerPort: 9094
+        {{- if .Values.broker.jmx.enabled }}
         - name: jmx
-          containerPort: 5555
+          containerPort: {{ .Values.broker.jmx.port }}
+        {{- end }}
         command:
         - ./bin/kafka-server-start.sh
         - /etc/kafka/server.properties

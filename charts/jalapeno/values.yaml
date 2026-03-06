@@ -71,6 +71,9 @@ kafka:
     service:
       type: NodePort
       nodePort: 30092
+    jmx:
+      enabled: false
+      port: 5555
     config:
       numPartitions: 1
       autoCreateTopics: true
