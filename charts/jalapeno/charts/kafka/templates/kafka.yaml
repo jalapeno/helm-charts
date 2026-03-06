@@ -88,6 +88,9 @@ spec:
         {{- if .Values.broker.jmx.enabled }}
         - name: JMX_PORT
           value: {{ .Values.broker.jmx.port | quote }}
+        {{- else }}
+        - name: KAFKA_JMX_OPTS
+          value: " "
         {{- end }}
         ports:
         - name: inside

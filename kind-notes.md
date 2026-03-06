@@ -45,7 +45,11 @@ kubectl get nodes
 
 Install jalapeno
 ```
-helm install jalapeno charts/jalapeno \
-  -f charts/jalapeno/values-kind.yaml \
-  --namespace jalapeno --create-namespace
+helm install jalapeno oci://ghcr.io/jalapeno/helm-charts/jalapeno \
+  --version 1.1.0 \
+  --namespace jalapeno --create-namespace \
+  --set arangodb.persistence.data.storageClass=standard \
+  --set arangodb.persistence.appdata.storageClass=standard \
+  --set kafka.zookeeper.persistence.storageClass=standard \
+  --set kafka.broker.persistence.storageClass=standard
 ```
