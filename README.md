@@ -15,6 +15,31 @@ Helm charts for deploying [Jalapeno](https://github.com/jalapeno/jalapeno), an i
 - Helm 3.10+
 - `kubectl` configured to communicate with your cluster
 
+## Storage Requirements
+
+Kafka, Zookeeper, and ArangoDB use PersistentVolumeClaims for data storage. How you
+satisfy these depends on your cluster:
+
+| Cluster type | Storage approach |
+|--------------|-----------------|
+| **Cloud** (EKS, GKE, AKS) | Usually works out of the box -- the cluster's default StorageClass handles dynamic provisioning |
+| **Kind** | Use `values-kind.yaml` (sets `storageClass: "standard"`) |
+| **Bare-metal / single-node** | Enable hostPath volumes (see flags below) or install a storage provisioner |
+
+**Bare-metal / single-node clusters** (e.g. kubeadm on Alma Linux, Rocky, Ubuntu, etc.)
+typically have no default StorageClass or dynamic provisioner. Without one, PVCs stay
+unbound and pods will be stuck in `Pending` with `FailedScheduling` errors. Add these
+flags to any install command:
+
+```bash
+--set arangodb.hostPath.enabled=true \
+--set kafka.zookeeper.hostPath.enabled=true \
+--set kafka.broker.hostPath.enabled=true
+```
+
+This creates static PersistentVolumes backed by host directories and binds the PVCs to
+them. See [Using hostPath Volumes](#using-hostpath-volumes) for details.
+
 ## Quick Start
 
 ### Base Installation (all components)
@@ -32,6 +57,17 @@ Deploys only BMP/topology components (GoBMP, Kafka, ArangoDB, graph processors, 
 helm install jalapeno charts/jalapeno \
   -f charts/jalapeno/values-topology-only.yaml \
   --namespace jalapeno --create-namespace
+```
+
+On bare-metal or single-node clusters, add hostPath flags:
+
+```bash
+helm install jalapeno charts/jalapeno \
+  -f charts/jalapeno/values-topology-only.yaml \
+  --namespace jalapeno --create-namespace \
+  --set arangodb.hostPath.enabled=true \
+  --set kafka.zookeeper.hostPath.enabled=true \
+  --set kafka.broker.hostPath.enabled=true
 ```
 
 ### Kind Cluster
@@ -65,6 +101,17 @@ processors. Those are deployed per-tenant in step 2.
 helm install jalapeno charts/jalapeno \
   -f charts/jalapeno/values-multi-tenant-infra.yaml \
   --namespace jalapeno --create-namespace
+```
+
+On bare-metal or single-node clusters, add hostPath flags:
+
+```bash
+helm install jalapeno charts/jalapeno \
+  -f charts/jalapeno/values-multi-tenant-infra.yaml \
+  --namespace jalapeno --create-namespace \
+  --set arangodb.hostPath.enabled=true \
+  --set kafka.zookeeper.hostPath.enabled=true \
+  --set kafka.broker.hostPath.enabled=true
 ```
 
 > **Note on the API:** The API currently connects to a single ArangoDB database.
@@ -145,15 +192,29 @@ helm install jalapeno charts/jalapeno \
 
 ### Using hostPath Volumes
 
-For bare-metal or single-node clusters:
+Clusters without a default StorageClass or dynamic volume provisioner (common on
+bare-metal and single-node setups) need hostPath volumes. Enabling hostPath creates
+static PersistentVolumes backed by directories on the node's filesystem and sets
+`storageClassName: ""` on the PVCs so they bind directly instead of waiting for a
+provisioner.
 
 ```bash
-helm install jalapeno charts/jalapeno \
-  --namespace jalapeno --create-namespace \
-  --set arangodb.hostPath.enabled=true \
-  --set kafka.zookeeper.hostPath.enabled=true \
-  --set kafka.broker.hostPath.enabled=true
+--set arangodb.hostPath.enabled=true \
+--set kafka.zookeeper.hostPath.enabled=true \
+--set kafka.broker.hostPath.enabled=true
 ```
+
+Default host paths:
+
+| Component | Path |
+|-----------|------|
+| ArangoDB data | `/var/lib/arangodb3` |
+| ArangoDB apps | `/var/lib/arangodb3-apps` |
+| Zookeeper | `/var/lib/zookeeper` |
+| Kafka | `/var/lib/kafka/data` |
+
+These can be overridden with `arangodb.hostPath.dataPath`, `kafka.zookeeper.hostPath.path`,
+and `kafka.broker.hostPath.path`.
 
 ## Uninstalling
 
@@ -163,6 +224,9 @@ helm uninstall jalapeno --namespace jalapeno
 
 # Remove the namespace (also deletes PVCs)
 kubectl delete namespace jalapeno
+
+# If using hostPath volumes, also remove the static PVs (these are cluster-scoped)
+kubectl delete pv arangodb arangodb-apps pvzoo pvkafka 2>/dev/null
 
 # Remove tenant
 helm uninstall swift-falcon --namespace swift-falcon
